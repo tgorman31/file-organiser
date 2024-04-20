@@ -35,3 +35,28 @@ Extend the functionality to calculate the size of directories recursively.
 
 ### 4. Sorting and Ranking Directories
 After calculating sizes, sort the directories by size to easily idetify the largest ones
+
+**Goals**
+- [ ] Sort directories based on their size
+- [ ] Print directories in order from largest to smallest
+
+### 5. Identifying Top Items
+Find and list the largest items within each directory. Includes both files and subdirectories
+
+**Goals**
+- [ ] Create a function to find the top N largest files in a directory
+
+### 6. User Interface and Interactivity
+Improve usability for the CLI tool by adding help commands, interactive prompts, flag controls etc.
+
+**Goals**
+- [ ] Add command-line flags for different functionalities
+- [ ] Add help documentation
+
+### 7. Performance Optimisation and Testing
+Refine the performance and test reliability
+
+**Goals**
+- [ ] Add error handling to manage permissions issues or unreadable files
+- [ ] Optimise performancce for large directories
+- [ ] Write unit tests
