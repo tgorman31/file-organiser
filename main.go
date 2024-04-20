@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 )
 
 func getDirItems(dir string) string {
@@ -10,9 +12,23 @@ func getDirItems(dir string) string {
 	return message
 }
 
-// Step0: Hello Worls
+// Step1: Get Dir Items
 
 func main() {
-	dir := "/user/code"
+	var dir string
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter a directory path: ")
+
+	dir, err := reader.ReadString('\n')
+
+	if err != nil {
+		fmt.Println("An error occured while reading input: ", err)
+	}
+
+	// dir := "/user/code"
+
+	dir = dir[:len(dir)-1]
+
 	fmt.Println(getDirItems(dir))
+
 }
