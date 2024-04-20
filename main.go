@@ -4,8 +4,15 @@ import (
 	"fmt"
 )
 
+func getDirItems(dir string) string {
+	message := fmt.Sprintf("Dir is %v", dir)
+
+	return message
+}
+
 // Step0: Hello Worls
 
 func main() {
-	fmt.Println("Hello World")
+	dir := "/user/code"
+	fmt.Println(getDirItems(dir))
 }
