@@ -16,8 +16,8 @@ Going to work my way up to the final program by implementing basic functionallit
 Create a Go program that can list all files and subdirectories in a given directory
 
 **Goals**
-- [ ] Parse the command line to accept a directory path
-- [ ] List all items in the specified directory
+- [x] Parse the command line to accept a directory path
+- [x] List all items in the specified directory
 
 ### 2. Calculate Directory Size
 Given a directory path calculate the total size of all the files in the directory
