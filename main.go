@@ -12,12 +12,26 @@ func getDirItems(dir string) {
 	c, err := os.ReadDir(dir)
 	check(err)
 
+	err = os.Chdir(dir)
+
 	fmt.Println(dir)
 	for _, entry := range c {
 		fmt.Println(" ", entry.Name(), entry.IsDir())
+		if !entry.IsDir() {
+			fileInfo, err := os.Stat(entry.Name())
+			check(err)
+			fmt.Println(" ", fileInfo.Size())
+		}
 	}
 	// return
 }
+
+// func getDirSize(file string) float64 {
+// 	// Takes a file path and calculates its size
+// 	size := 1.0
+
+// 	return size
+// }
 
 func check(e error) {
 	if e != nil {
@@ -29,26 +43,20 @@ func check(e error) {
 
 func main() {
 	var dir string
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter a directory path: ")
+	test := true
 
-	dir, err := reader.ReadString('\n')
+	if !test {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter a directory path: ")
 
-	check(err)
-	dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
+		dir, err := reader.ReadString('\n')
 
-	// os.MkdirAll("subdir/parent/child", 0755)
+		check(err)
+		dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
 
-	// createEmptyFile := func(name string) {
-	// 	d := []byte("")
-	// 	check(os.WriteFile(name, d, 0644))
-	// }
-
-	// createEmptyFile("subdir/parent/file2")
-	// createEmptyFile("subdir/parent/file3")
-	// createEmptyFile("subdir/parent/child/file4")
-
-	// fmt.Println(getDirItems(dir))
+	} else {
+		dir = "C:/Users/thoma/D&D"
+	}
 
 	getDirItems(dir)
 
