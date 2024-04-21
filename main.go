@@ -13,25 +13,27 @@ func getDirItems(dir string) {
 	check(err)
 
 	err = os.Chdir(dir)
+	check(err)
 
 	fmt.Println(dir)
 	for _, entry := range c {
-		fmt.Println(" ", entry.Name(), entry.IsDir())
+
 		if !entry.IsDir() {
-			fileInfo, err := os.Stat(entry.Name())
-			check(err)
-			fmt.Println(" ", fileInfo.Size())
+			fmt.Println(" ", entry.Name(), entry.IsDir(), getDirSize(entry.Name()), "bytes")
+		} else {
+			fmt.Println(" ", entry.Name(), entry.IsDir())
 		}
 	}
 	// return
 }
 
-// func getDirSize(file string) float64 {
-// 	// Takes a file path and calculates its size
-// 	size := 1.0
-
-// 	return size
-// }
+func getDirSize(file string) int64 {
+	// Takes a file name and calculates its size
+	fileInfo, err := os.Stat(file)
+	check(err)
+	size := fileInfo.Size()
+	return size
+}
 
 func check(e error) {
 	if e != nil {
