@@ -30,8 +30,8 @@ Given a directory path calculate the total size of all the files in the director
 Extend the functionality to calculate the size of directories recursively.
 
 **Goals**
-- [ ] Modify the directory size function to perform recursive calculations.
-- [ ] Print the total size of the directory and each sub-directories
+- [x] Modify the directory size function to perform recursive calculations.
+- [x] Print the total size of the directory and each sub-directories
 
 ### 4. Sorting and Ranking Directories
 After calculating sizes, sort the directories by size to easily idetify the largest ones

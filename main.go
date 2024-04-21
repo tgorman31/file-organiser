@@ -61,10 +61,12 @@ func main() {
 	} else {
 		dir = "subdir"
 		dir = "C:/Users/thoma/D&D"
+		dir = "C:/Users/thoma/Downloads"
+		dir = "C:/Users/thoma/Code"
 	}
 
 	size := getDirItems(dir)
-
-	fmt.Println("Dir:", dir, "\nSize:", size)
+	mbSize := float64(size) / 1000000
+	fmt.Println("Dir:", dir, "\nSize:", mbSize, "MB")
 
 }
