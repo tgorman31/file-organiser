@@ -4,12 +4,25 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
-func getDirItems(dir string) string {
-	message := fmt.Sprintf("Dir is %v", dir)
+func getDirItems(dir string) {
 
-	return message
+	c, err := os.ReadDir(dir)
+	check(err)
+
+	fmt.Println("Listing subdir/parent")
+	for _, entry := range c {
+		fmt.Println(" ", entry.Name(), entry.IsDir())
+	}
+	// return
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
 
 // Step1: Get Dir Items
@@ -21,14 +34,22 @@ func main() {
 
 	dir, err := reader.ReadString('\n')
 
-	if err != nil {
-		fmt.Println("An error occured while reading input: ", err)
+	check(err)
+	dir = strings.TrimSpace(dir)
+
+	os.MkdirAll("subdir/parent/child", 0755)
+
+	createEmptyFile := func(name string) {
+		d := []byte("")
+		check(os.WriteFile(name, d, 0644))
 	}
 
-	// dir := "/user/code"
+	createEmptyFile("subdir/parent/file2")
+	createEmptyFile("subdir/parent/file3")
+	createEmptyFile("subdir/parent/child/file4")
 
-	dir = dir[:len(dir)-1]
+	// fmt.Println(getDirItems(dir))
 
-	fmt.Println(getDirItems(dir))
+	getDirItems(dir)
 
 }
