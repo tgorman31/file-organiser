@@ -4,30 +4,32 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
-func getDirItems(dir string) {
-
+func getDirItems(dir string) int64 {
+	var size int64
 	c, err := os.ReadDir(dir)
 	check(err)
 
-	err = os.Chdir(dir)
-	check(err)
+	// fmt.Println("Directory:", dir)
 
-	fmt.Println(dir)
 	for _, entry := range c {
+		fullPath := filepath.Join(dir, entry.Name())
+		if entry.IsDir() {
+			size += getDirItems(fullPath)
 
-		if !entry.IsDir() {
-			fmt.Println(" ", entry.Name(), entry.IsDir(), getDirSize(entry.Name()), "bytes")
 		} else {
-			fmt.Println(" ", entry.Name(), entry.IsDir())
+			size += getFileSize(fullPath)
 		}
 	}
-	// return
+
+	// fmt.Println(dir, "size =", size, "bytes")
+	return size
 }
 
-func getDirSize(file string) int64 {
+func getFileSize(file string) int64 {
 	// Takes a file name and calculates its size
 	fileInfo, err := os.Stat(file)
 	check(err)
@@ -57,9 +59,12 @@ func main() {
 		dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
 
 	} else {
+		dir = "subdir"
 		dir = "C:/Users/thoma/D&D"
 	}
 
-	getDirItems(dir)
+	size := getDirItems(dir)
+
+	fmt.Println("Dir:", dir, "\nSize:", size)
 
 }

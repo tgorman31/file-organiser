@@ -23,8 +23,8 @@ Create a Go program that can list all files and subdirectories in a given direct
 Given a directory path calculate the total size of all the files in the directory
 
 **Goals**
-- [ ] Implement a function to calculate the size of a single directory
-- [ ] Print the total size of the directory
+- [x] Implement a function to calculate the size of a single directory
+- [x] Print the total size of the directory
 
 ### 3. Recursive Directory Traversal
 Extend the functionality to calculate the size of directories recursively.
