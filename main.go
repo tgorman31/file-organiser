@@ -76,7 +76,7 @@ func getDirItems(dir, fullPath string, dirLevel, currLevel int) int64 {
 		}
 	}
 	if dirLevel >= currLevel {
-		s := fmt.Sprintf("%.2f MB", convertToMB(size))
+		s := convertToHumanReadableSize(size)
 		fld := strings.Replace(fullPath, dir+"\\", "", -1)
 
 		if currLevel != 1 {
@@ -100,8 +100,25 @@ func check(e error) {
 	}
 }
 
-func convertToMB(bytes int64) float64 {
-	mbSize := float64(bytes) / 1000000
+func convertToHumanReadableSize(bytes int64) string {
+	var size float64
+	var sizeType string
+	switch {
+	case bytes >= 1000000000:
+		size = float64(bytes) / 1000000000
+		sizeType = "GB"
+	case bytes >= 1000000:
+		size = float64(bytes) / 1000000
+		sizeType = "MB"
+	case bytes >= 1000:
+		size = float64(bytes) / 1000
+		sizeType = "KB"
+	default:
+		size = float64(bytes)
+		sizeType = " B"
+	}
+	mbSize := fmt.Sprintf("%.2f "+sizeType, size)
+
 	return mbSize
 }
 
@@ -130,7 +147,7 @@ func main() {
 	dir = strings.Replace(dir, "/", "\\", -1)
 
 	size := getDirItems(dir, dir, 2, 1)
-	t.Row("Total", fmt.Sprintf("%.2f MB", convertToMB(size)))
+	t.Row("Total", convertToHumanReadableSize(size))
 	// fmt.Println("Dir:", dir, "\nSize:", convertToMB(size), "MB")
 
 	fmt.Println(t)
