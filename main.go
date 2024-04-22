@@ -40,27 +40,48 @@ var OddRowStyle = lg.NewStyle().
 	// Background(lg.Color("#7D56F4")).
 	Width(22)
 
-func getDirItems(dir string, dirLevel, currLevel int) int64 {
-	// Takes a strig input of a Directory path and an Int of the level the data wishes to be returned at
+var t = tbl.New().
+	Border(lg.NormalBorder()).
+	BorderStyle(lg.NewStyle().Foreground(lg.Color("99"))).
+	StyleFunc(func(row, col int) lg.Style {
+		switch {
+		case row == 0:
+			return HeaderStyle
+		case row%2 == 0:
+			return EvenRowStyle
+		default:
+			return OddRowStyle
+		}
+	}).
+	Headers("FOLDER", "SIZE")
+
+// Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
+func getDirItems(dir, fullPath string, dirLevel, currLevel int) int64 {
+
 	var size int64
 
-	c, err := os.ReadDir(dir)
+	c, err := os.ReadDir(fullPath)
 	check(err)
 
 	// fmt.Println("Directory:", dir)
 
 	for _, entry := range c {
-		fullPath := filepath.Join(dir, entry.Name())
+		fullPath := filepath.Join(fullPath, entry.Name())
 		if entry.IsDir() {
 			currLevel++
-			size += getDirItems(fullPath, dirLevel, currLevel)
+			size += getDirItems(dir, fullPath, dirLevel, currLevel)
 			currLevel--
 		} else {
 			size += getFileSize(fullPath)
 		}
 	}
 	if dirLevel >= currLevel {
-		fmt.Println(dir, "size =", convertToMB(size), "bytes")
+		s := fmt.Sprintf("%.2f MB", convertToMB(size))
+		fld := strings.Replace(fullPath, dir+"\\", "", -1)
+
+		if currLevel != 1 {
+			t.Row(fld, s)
+		}
 	}
 	return size
 }
@@ -102,29 +123,15 @@ func main() {
 	} else {
 		dir = "subdir"
 		dir = "C:/Users/thoma/Code"
-		dir = "C:/Users/thoma/D&D"
 		dir = "C:/Users/thoma/Downloads"
+		dir = "C:/Users/thoma/D&D"
 	}
 
-	t := tbl.New().
-		Border(lg.NormalBorder()).
-		BorderStyle(lg.NewStyle().Foreground(lg.Color("99"))).
-		StyleFunc(func(row, col int) lg.Style {
-			switch {
-			case row == 0:
-				return HeaderStyle
-			case row%2 == 0:
-				return EvenRowStyle
-			default:
-				return OddRowStyle
-			}
-		}).
-		Headers("LANGUAGE", "FORMAL", "INFORMAL")
+	dir = strings.Replace(dir, "/", "\\", -1)
 
-	t.Row("English", "You look absolutely fabulous.", "How's it going?")
-
-	size := getDirItems(dir, 2, 1)
-	fmt.Println("Dir:", dir, "\nSize:", convertToMB(size), "MB")
+	size := getDirItems(dir, dir, 2, 1)
+	t.Row("Total", fmt.Sprintf("%.2f MB", convertToMB(size)))
+	// fmt.Println("Dir:", dir, "\nSize:", convertToMB(size), "MB")
 
 	fmt.Println(t)
 
