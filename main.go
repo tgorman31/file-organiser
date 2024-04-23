@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	d "file-organiser/cmd"
+	cmd "file-organiser/cmd"
 	tbl "file-organiser/style"
 	"fmt"
 	"os"
@@ -40,10 +40,19 @@ func main() {
 
 	dir = strings.Replace(dir, "/", "\\", -1)
 
-	size := d.Get_Dir_Items(dir, dir, 2, 1)
-	t.Row("Total", d.Readable_Size(size))
+	// size := cmd.Get_Dir_Items(dir, dir, 2, 1)
+	// t.Row("Total", cmd.Readable_Size(size))
 	// fmt.Println("Dir:", dir, "\nSize:", convertToMB(size), "MB")
 
-	fmt.Println(t)
+	// fmt.Println(t)
 
+	sortedDirs := cmd.Get_Sorted_Dir(dir, dir, 2, 1)
+
+	// Output the sorted directories
+	fmt.Println("Sorted directories:")
+	for _, dir := range sortedDirs {
+		t.Row(dir.Name, cmd.Readable_Size(dir.Size))
+		// fmt.Printf("%s: %d bytes\n", dir.Name, dir.Size)
+	}
+	fmt.Println(t)
 }

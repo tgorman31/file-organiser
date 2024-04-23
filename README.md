@@ -37,8 +37,8 @@ Extend the functionality to calculate the size of directories recursively.
 After calculating sizes, sort the directories by size to easily idetify the largest ones
 
 **Goals**
-- [ ] Sort directories based on their size
-- [ ] Print directories in order from largest to smallest
+- [x] Sort directories based on their size
+- [x] Print directories in order from largest to smallest
 
 ### 5. Identifying Top Items
 Find and list the largest items within each directory. Includes both files and subdirectories
