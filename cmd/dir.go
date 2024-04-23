@@ -1,17 +1,26 @@
 package cmd
 
 import (
+	"cmp"
 	tbl "file-organiser/style"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
+type Dir struct {
+	name string
+	size int
+}
+
+var d []Dir
+
 // Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
-func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int64 {
+func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int {
 	t := tbl.CreateTable()
-	var size int64
+	var size int
 
 	c, err := os.ReadDir(fullPath)
 	check(err)
@@ -31,18 +40,27 @@ func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int64 {
 	if dirLevel >= currLevel {
 		s := Readable_Size(size)
 		fld := strings.Replace(fullPath, dir+"\\", "", -1)
+		d = append(d, Dir{fld, size})
 		if currLevel != 1 {
 			t.Row(fld, s)
+			sort_Directories(d)
 		}
 	}
 	return size
 }
 
-func getFileSize(file string) int64 {
+func sort_Directories(dirs []Dir) {
+	slices.SortFunc(dirs,
+		func(a, b Dir) int {
+			return cmp.Compare(a.size, b.size)
+		})
+}
+
+func getFileSize(file string) int {
 	// Takes a file name and calculates its size
 	fileInfo, err := os.Stat(file)
 	check(err)
-	size := fileInfo.Size()
+	var size int = int(fileInfo.Size())
 	return size
 }
 
@@ -52,7 +70,7 @@ func check(e error) {
 	}
 }
 
-func Readable_Size(bytes int64) string {
+func Readable_Size(bytes int) string {
 	var size float64
 	var sizeType string
 	switch {
