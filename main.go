@@ -9,7 +9,6 @@ import (
 	"strings"
 )
 
-// Step1: Get Dir Items
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -39,12 +38,6 @@ func main() {
 	}
 
 	dir = strings.Replace(dir, "/", "\\", -1)
-
-	// size := cmd.Get_Dir_Items(dir, dir, 2, 1)
-	// t.Row("Total", cmd.Readable_Size(size))
-	// fmt.Println("Dir:", dir, "\nSize:", convertToMB(size), "MB")
-
-	// fmt.Println(t)
 
 	sortedDirs := cmd.Get_Sorted_Dir(dir, dir, 2, 1)
 

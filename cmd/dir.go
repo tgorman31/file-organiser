@@ -13,6 +13,12 @@ import (
 type Dir struct {
 	Name string
 	Size int
+	File []File
+}
+
+type File struct {
+	Name string
+	Size int
 }
 
 var d []Dir
@@ -40,7 +46,7 @@ func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int {
 	if dirLevel >= currLevel {
 		s := Readable_Size(size)
 		fld := strings.Replace(fullPath, dir+"\\", "", -1)
-		d = append(d, Dir{fld, size})
+		d = append(d, Dir{fld, size, nil})
 		if currLevel != 1 {
 			t.Row(fld, s)
 			sort_Directories(d)
@@ -57,8 +63,6 @@ func Get_Sorted_Dir(dir, fullPath string, dirLevel, currLevel int) []Dir {
 	c, err := os.ReadDir(fullPath)
 	check(err)
 
-	// fmt.Println("Directory:", dir)
-
 	for _, entry := range c {
 		fullPath := filepath.Join(fullPath, entry.Name())
 		if entry.IsDir() {
@@ -72,10 +76,10 @@ func Get_Sorted_Dir(dir, fullPath string, dirLevel, currLevel int) []Dir {
 	if dirLevel >= currLevel {
 		fld := strings.Replace(fullPath, dir+"\\", "", -1)
 		if currLevel != 1 {
-			d = append(d, Dir{fld, size})
+			d = append(d, Dir{fld, size, nil})
 			sort_Directories(d)
 		} else {
-			d = append(d, Dir{"Total", size})
+			d = append(d, Dir{"Total", size, nil})
 		}
 	}
 	return d
