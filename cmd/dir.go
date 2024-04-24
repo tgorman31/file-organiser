@@ -22,6 +22,7 @@ type File struct {
 }
 
 var d []Dir
+var f []File
 
 // Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
 func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int {
@@ -30,8 +31,6 @@ func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int {
 
 	c, err := os.ReadDir(fullPath)
 	check(err)
-
-	// fmt.Println("Directory:", dir)
 
 	for _, entry := range c {
 		fullPath := filepath.Join(fullPath, entry.Name())
@@ -71,23 +70,32 @@ func Get_Sorted_Dir(dir, fullPath string, dirLevel, currLevel int) []Dir {
 			currLevel--
 		} else {
 			size += getFileSize(fullPath)
+			f = append(f, File{fullPath, size})
 		}
 	}
 	if dirLevel >= currLevel {
 		fld := strings.Replace(fullPath, dir+"\\", "", -1)
 		if currLevel != 1 {
-			d = append(d, Dir{fld, size, nil})
+			d = append(d, Dir{fld, size, f})
 			sort_Directories(d)
 		} else {
-			d = append(d, Dir{"Total", size, nil})
+			d = append(d, Dir{"Total", size, f})
 		}
 	}
+	fmt.Println(d)
 	return d
 }
 
 func sort_Directories(dirs []Dir) {
 	slices.SortFunc(dirs,
 		func(a, b Dir) int {
+			return cmp.Compare(a.Size, b.Size)
+		})
+}
+
+func sort_Files(files []File) {
+	slices.SortFunc(files,
+		func(a, b File) int {
 			return cmp.Compare(a.Size, b.Size)
 		})
 }
