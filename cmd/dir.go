@@ -25,7 +25,7 @@ var d []Dir
 var f []File
 
 // Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
-func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int {
+func Get_Dir_Items_Size(dir, fullPath string, dirLevel, currLevel int) int {
 	t := tbl.CreateTable()
 	var size int
 
@@ -36,16 +36,17 @@ func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int {
 		fullPath := filepath.Join(fullPath, entry.Name())
 		if entry.IsDir() {
 			currLevel++
-			size += Get_Dir_Items(dir, fullPath, dirLevel, currLevel)
+			size += Get_Dir_Items_Size(dir, fullPath, dirLevel, currLevel)
 			currLevel--
 		} else {
 			size += getFileSize(fullPath)
+			// f = append(f, File{fullPath, size})
 		}
 	}
 	if dirLevel >= currLevel {
 		s := Readable_Size(size)
 		fld := strings.Replace(fullPath, dir+"\\", "", -1)
-		d = append(d, Dir{fld, size, nil})
+		d = append(d, Dir{fld, size, f})
 		if currLevel != 1 {
 			t.Row(fld, s)
 			sort_Directories(d)
@@ -53,6 +54,21 @@ func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) int {
 	}
 	return size
 }
+
+// Get Dir Items Size returns an int that is the size of the dir
+// Get File Size returns the size of the specified file
+
+// I need to know the files that exist inside each Dir
+// Dir Items if a Dir is found will call itself
+// Dir 1
+// -----> Dir 2
+// ------------> Dir 3
+// -------------------> File 1
+// -------------------> File 2
+// -------------------> File 3
+// When we reach Dir 3 there is no more Dir's only files
+// Get Dir Items Size uses Get File Size to loop through these items, total them up and pass the size up the chain
+// This repeats until the the size of each Dir is calculated
 
 // Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
 // and sorts it by size
@@ -66,7 +82,7 @@ func Get_Sorted_Dir(dir, fullPath string, dirLevel, currLevel int) []Dir {
 		fullPath := filepath.Join(fullPath, entry.Name())
 		if entry.IsDir() {
 			currLevel++
-			size += Get_Dir_Items(dir, fullPath, dirLevel, currLevel)
+			size += Get_Dir_Items_Size(dir, fullPath, dirLevel, currLevel)
 			currLevel--
 		} else {
 			size += getFileSize(fullPath)
@@ -82,8 +98,16 @@ func Get_Sorted_Dir(dir, fullPath string, dirLevel, currLevel int) []Dir {
 			d = append(d, Dir{"Total", size, f})
 		}
 	}
-	fmt.Println(d)
+	write_to_file(d)
 	return d
+}
+
+func write_to_file(dir []Dir) {
+	fl, err := os.Create("test.txt")
+	check(err)
+	str := fmt.Sprintln(dir)
+	fl.WriteString(str)
+	fl.Close()
 }
 
 func sort_Directories(dirs []Dir) {
