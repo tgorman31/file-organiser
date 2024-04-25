@@ -21,8 +21,80 @@ type File struct {
 	Size int
 }
 
-var d []Dir
+var D []Dir
 var f []File
+
+// Function to gather directories
+func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) []Dir {
+	var dr []Dir
+
+	c, err := os.ReadDir(fullPath)
+	check(err)
+
+	for _, entry := range c {
+		fullPath := filepath.Join(fullPath, entry.Name())
+		if entry.IsDir() {
+			currLevel++
+			dr = Gather_Directories(dir, fullPath, dirLevel, currLevel)
+			D = append(D, dr...)
+			currLevel--
+		}
+	}
+	fld := strings.Replace(fullPath, dir+"\\", "", -1)
+	dr = append(dr, Dir{fld, 0, nil})
+
+	return dr
+}
+
+// Function to update Dir size by adding provided int
+func Update_Dir_Size(dirs []Dir, dir_name string, additional_size int) []Dir {
+	for i, dir := range dirs {
+		if dir.Name == dir_name {
+			dirs[i].Size += additional_size
+		}
+	}
+	return dirs
+}
+
+// Function to update Dir File by adding provided Files struct
+func Update_Dir_Files(dirs []Dir, dir_name string, new_Files []File) []Dir {
+	for i, dir := range dirs {
+		if dir.Name == dir_name {
+			dirs[i].File = append(dirs[i].File, new_Files...)
+		}
+	}
+	return dirs
+}
+
+// Function to gather files for Dir
+func Gather_Files(path string, prefix_path string) []File {
+	var fl []File
+
+	fullPath := prefix_path + "\\" + path
+	c, err := os.ReadDir(fullPath)
+	check(err)
+
+	for _, entry := range c {
+		if !entry.IsDir() {
+			fullPath = filepath.Join(prefix_path+"\\"+path, entry.Name())
+			size := getFileSize(fullPath)
+			fl = append(fl, File{entry.Name(), size})
+		}
+	}
+	return fl
+}
+
+func Update_Dir(dirs []Dir, prefix_path string) []Dir {
+	for _, dir := range dirs {
+		Update_Dir_Files(dirs, dir.Name, Gather_Files(dir.Name, prefix_path))
+		// if dir.Name == dir_name {
+		// 	dirs[i].File = append(dirs[i].File, new_Files...)
+		// }
+	}
+	return dirs
+}
+
+// Function to get size
 
 // Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
 func Get_Dir_Items_Size(dir, fullPath string, dirLevel, currLevel int) int {
@@ -46,13 +118,55 @@ func Get_Dir_Items_Size(dir, fullPath string, dirLevel, currLevel int) int {
 	if dirLevel >= currLevel {
 		s := Readable_Size(size)
 		fld := strings.Replace(fullPath, dir+"\\", "", -1)
-		d = append(d, Dir{fld, size, f})
+		D = append(D, Dir{fld, size, f})
 		if currLevel != 1 {
 			t.Row(fld, s)
-			sort_Directories(d)
+			sort_Directories(D)
 		}
 	}
 	return size
+}
+
+// Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
+func Get_Dir_Items(dir, fullPath string, dirLevel, currLevel int) (int, []Dir) {
+	t := tbl.CreateTable()
+	var size int
+	var sz int
+	var dr []Dir
+	var fl []File
+
+	c, err := os.ReadDir(fullPath)
+	check(err)
+
+	for _, entry := range c {
+		fullPath := filepath.Join(fullPath, entry.Name())
+		if entry.IsDir() {
+			currLevel++
+			sz, dr = Get_Dir_Items(dir, fullPath, dirLevel, currLevel)
+			size += sz
+			fullPath := strings.Replace(fullPath, dir+"\\", "", -1)
+			fl = append(fl, File{fullPath, size})
+			currLevel--
+		} else {
+			size += getFileSize(fullPath)
+			fullPath := strings.Replace(fullPath, dir+"\\", "", -1)
+			fl = append(fl, File{fullPath, size})
+		}
+	}
+	dr = append(dr, Dir{fullPath, size, fl})
+	if dirLevel >= currLevel {
+		s := Readable_Size(size)
+		fld := strings.Replace(fullPath, dir+"\\", "", -1)
+		// D = append(D, Dir{fld, size, f})
+		if currLevel != 1 {
+			t.Row(fld, s)
+			sort_Directories(dr)
+			Write_to_file(dr, "tmp\\"+fmt.Sprint(fld)+".txt")
+			D = append(D, Dir{fld, size, fl})
+		}
+	}
+
+	return size, dr
 }
 
 // Get Dir Items Size returns an int that is the size of the dir
@@ -69,6 +183,7 @@ func Get_Dir_Items_Size(dir, fullPath string, dirLevel, currLevel int) int {
 // When we reach Dir 3 there is no more Dir's only files
 // Get Dir Items Size uses Get File Size to loop through these items, total them up and pass the size up the chain
 // This repeats until the the size of each Dir is calculated
+// Try have Get_Dir_Items to return an int size and a Dir[]
 
 // Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
 // and sorts it by size
@@ -92,21 +207,20 @@ func Get_Sorted_Dir(dir, fullPath string, dirLevel, currLevel int) []Dir {
 	if dirLevel >= currLevel {
 		fld := strings.Replace(fullPath, dir+"\\", "", -1)
 		if currLevel != 1 {
-			d = append(d, Dir{fld, size, f})
-			sort_Directories(d)
+			D = append(D, Dir{fld, size, f})
+			sort_Directories(D)
 		} else {
-			d = append(d, Dir{"Total", size, f})
+			D = append(D, Dir{"Total", size, f})
 		}
 	}
-	write_to_file(d)
-	return d
+	return D
 }
 
-func write_to_file(dir []Dir) {
-	fl, err := os.Create("test.txt")
+func Write_to_file(dir []Dir, fileName string) {
+	fl, err := os.Create(fileName)
 	check(err)
 	str := fmt.Sprintln(dir)
-	fl.WriteString(str)
+	fl.WriteString(str + "\n")
 	fl.Close()
 }
 
