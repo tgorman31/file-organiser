@@ -24,6 +24,78 @@ type File struct {
 var D []Dir
 var f []File
 
+// Function to gather directories
+func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) []Dir {
+	var dr []Dir
+
+	c, err := os.ReadDir(fullPath)
+	check(err)
+
+	for _, entry := range c {
+		fullPath := filepath.Join(fullPath, entry.Name())
+		if entry.IsDir() {
+			currLevel++
+			dr = Gather_Directories(dir, fullPath, dirLevel, currLevel)
+			D = append(D, dr...)
+			currLevel--
+		}
+	}
+	fld := strings.Replace(fullPath, dir+"\\", "", -1)
+	dr = append(dr, Dir{fld, 0, nil})
+
+	return dr
+}
+
+// Function to update Dir size by adding provided int
+func Update_Dir_Size(dirs []Dir, dir_name string, additional_size int) []Dir {
+	for i, dir := range dirs {
+		if dir.Name == dir_name {
+			dirs[i].Size += additional_size
+		}
+	}
+	return dirs
+}
+
+// Function to update Dir File by adding provided Files struct
+func Update_Dir_Files(dirs []Dir, dir_name string, new_Files []File) []Dir {
+	for i, dir := range dirs {
+		if dir.Name == dir_name {
+			dirs[i].File = append(dirs[i].File, new_Files...)
+		}
+	}
+	return dirs
+}
+
+// Function to gather files for Dir
+func Gather_Files(path string, prefix_path string) []File {
+	var fl []File
+
+	fullPath := prefix_path + "\\" + path
+	c, err := os.ReadDir(fullPath)
+	check(err)
+
+	for _, entry := range c {
+		if !entry.IsDir() {
+			fullPath = filepath.Join(prefix_path+"\\"+path, entry.Name())
+			size := getFileSize(fullPath)
+			fl = append(fl, File{entry.Name(), size})
+		}
+	}
+	return fl
+}
+
+func Update_Dir(dirs []Dir, prefix_path string) []Dir {
+	for _, dir := range dirs {
+		Update_Dir_Files(dirs, dir.Name, Gather_Files(dir.Name, prefix_path))
+		// if dir.Name == dir_name {
+		// 	dirs[i].File = append(dirs[i].File, new_Files...)
+		// }
+	}
+	return dirs
+}
+
+// Function to get size
+
 // Takes a string input of a Directory path and an Int of the level the data wishes to be returned at
 func Get_Dir_Items_Size(dir, fullPath string, dirLevel, currLevel int) int {
 	t := tbl.CreateTable()

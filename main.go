@@ -38,11 +38,14 @@ func main() {
 
 	dir = strings.Replace(dir, "/", "\\", -1)
 
-	size, sortedDirs := cmd.Get_Dir_Items(dir, dir, 2, 1)
+	// size, sortedDirs := cmd.Get_Dir_Items(dir, dir, 2, 1)
+	sortedDirs := cmd.Gather_Directories(dir, dir, 2, 1)
 
 	cmd.Write_to_file(sortedDirs, "test.txt")
+	// cmd.Update_Dir(cmd.D)
+	cmd.Update_Dir(cmd.D, dir)
 	cmd.Write_to_file(cmd.D, "final.txt")
-	fmt.Println(size)
+	// fmt.Println(size)
 	// Output the sorted directories
 	// fmt.Println("Sorted directories:")
 	// for _, dir := range sortedDirs {
