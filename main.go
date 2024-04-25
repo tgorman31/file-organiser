@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	cmd "file-organiser/cmd"
-	tbl "file-organiser/style"
 	"fmt"
 	"os"
 	"strings"
@@ -19,7 +18,7 @@ func main() {
 	var dir string
 	test := true
 
-	t := tbl.CreateTable()
+	// t := tbl.CreateTable()
 
 	if !test {
 		reader := bufio.NewReader(os.Stdin)
@@ -39,13 +38,16 @@ func main() {
 
 	dir = strings.Replace(dir, "/", "\\", -1)
 
-	sortedDirs := cmd.Get_Sorted_Dir(dir, dir, 2, 1)
+	size, sortedDirs := cmd.Get_Dir_Items(dir, dir, 2, 1)
 
+	cmd.Write_to_file(sortedDirs, "test.txt")
+	cmd.Write_to_file(cmd.D, "final.txt")
+	fmt.Println(size)
 	// Output the sorted directories
-	fmt.Println("Sorted directories:")
-	for _, dir := range sortedDirs {
-		t.Row(dir.Name, cmd.Readable_Size(dir.Size))
-		// fmt.Printf("%s: %d bytes\n", dir.Name, dir.Size)
-	}
-	fmt.Println(t)
+	// fmt.Println("Sorted directories:")
+	// for _, dir := range sortedDirs {
+	// 	t.Row(dir.Name, cmd.Readable_Size(dir.Size))
+	// 	// fmt.Printf("%s: %d bytes\n", dir.Name, dir.Size)
+	// }
+	// fmt.Println(t)
 }
