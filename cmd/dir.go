@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"cmp"
+	"sort"
 	"strings"
 
 	// tbl "file-organiser/style"
@@ -45,6 +46,9 @@ func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) ([]Dir, [
 			dr = append(dr, sub_dir...)
 
 			fld := strings.Replace(entryPath, dir+"\\", "", -1)
+
+			sort_Files(dir_files)
+
 			dirEntry := Dir{fld, dir_size, currLevel, dir_files}
 
 			files = append(files, File{entry.Name(), dir_size, true})
@@ -112,12 +116,11 @@ func sort_Directories(dirs []Dir) {
 }
 
 func sort_Files(files []File) {
-	slices.SortFunc(files,
-		func(a, b File) int {
-			return cmp.Compare(a.Size, b.Size)
-		})
-}
 
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Size > files[j].Size
+	})
+}
 func getFileSize(file string) int {
 	// Takes a file name and calculates its size
 	fileInfo, err := os.Stat(file)
@@ -131,6 +134,53 @@ func check(e error) {
 		panic(e)
 	}
 }
+
+// // Adapted from the SortKeys example in the "sort" docs
+// // By is the type of a "less" function that defines the ordering of its Planet arguments.
+// type By func(f1, f2 *File) bool
+
+// // Sort is a method on the function type, By, that sorts the argument slice according to the function.
+// func (by By) Sort(files []File) {
+// 	fls := &fileSorter{
+// 		files: files,
+// 		by:    by, //The Sort method's receiver is the fuction (closure) that defines the sort order
+// 	}
+// 	sort.Sort(fls)
+// }
+
+// // fileSorter joins a By function and a slice of Planets to be sorted.
+// type fileSorter struct {
+// 	files []File
+// 	by    func(f1, f2 *File) bool // Closure use in the Less method
+// }
+
+// // Len is part of sort.Interface.
+// func (s *fileSorter) Len() int {
+// 	return len(s.files)
+// }
+
+// // Swap is part of sort.Interface
+// func (s *fileSorter) Swap(i, j int) {
+// 	s.files[i], s.files[j] = s.files[j], s.files[i]
+// }
+
+// // Less is part of sort.Interface. It is implemented by calling th "by" closure in the sorter
+// func (s *fileSorter) Less(i, j int) bool {
+// 	return s.by(&s.files[i], &s.files[j])
+// }
+//
+// A function using the above
+// func sort_Files(files []File) {
+//
+// 	size := func(f1, f2 *File) bool {
+// 		return f1.Size > f2.Size
+// 	}
+// 	By(size).Sort(files)
+//
+// 	name := func(f1, f2 *File) bool {
+// 	return f1.name < f2.name
+// }
+// }
 
 func Readable_Size(bytes int) string {
 	var size float64
