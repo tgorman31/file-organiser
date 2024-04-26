@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"cmp"
 	"sort"
 	"strings"
 
@@ -9,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 )
 
 type Dir struct {
@@ -55,6 +53,7 @@ func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) ([]Dir, [
 
 			if !dirExists(dr, fld) {
 				dr = append(dr, dirEntry)
+				sort_Directories(dr)
 			}
 		} else {
 			file_size := getFileSize(entryPath)
@@ -75,31 +74,6 @@ func dirExists(dirs []Dir, dirName string) bool {
 	return false
 }
 
-// // Function to find a directory by name and apply a given function to update it
-// func Update_Dir(dirs []Dir, dirName string, updateFn func(*Dir)) []Dir {
-// 	for i, dir := range dirs {
-// 		if dir.Name == dirName {
-// 			updateFn(&dirs[i]) // Apply the update function to the directory
-// 			break
-// 		}
-// 	}
-// 	return dirs
-// }
-
-// // Function to add a specified size to a directory
-// func addSize(size int) func(*Dir) {
-// 	return func(dir *Dir) {
-// 		dir.Size += size
-// 	}
-// }
-
-// // Function to add new files to a directory
-// func addFiles(files []File) func(*Dir) {
-// 	return func(dir *Dir) {
-// 		dir.File = append(dir.File, files...)
-// 	}
-// }
-
 func Write_to_file(dir []Dir, fileName string) {
 	fl, err := os.Create(fileName)
 	check(err)
@@ -109,10 +83,9 @@ func Write_to_file(dir []Dir, fileName string) {
 }
 
 func sort_Directories(dirs []Dir) {
-	slices.SortFunc(dirs,
-		func(a, b Dir) int {
-			return cmp.Compare(a.Size, b.Size)
-		})
+	sort.Slice(dirs, func(i, j int) bool {
+		return dirs[i].Size > dirs[j].Size
+	})
 }
 
 func sort_Files(files []File) {
@@ -134,53 +107,6 @@ func check(e error) {
 		panic(e)
 	}
 }
-
-// // Adapted from the SortKeys example in the "sort" docs
-// // By is the type of a "less" function that defines the ordering of its Planet arguments.
-// type By func(f1, f2 *File) bool
-
-// // Sort is a method on the function type, By, that sorts the argument slice according to the function.
-// func (by By) Sort(files []File) {
-// 	fls := &fileSorter{
-// 		files: files,
-// 		by:    by, //The Sort method's receiver is the fuction (closure) that defines the sort order
-// 	}
-// 	sort.Sort(fls)
-// }
-
-// // fileSorter joins a By function and a slice of Planets to be sorted.
-// type fileSorter struct {
-// 	files []File
-// 	by    func(f1, f2 *File) bool // Closure use in the Less method
-// }
-
-// // Len is part of sort.Interface.
-// func (s *fileSorter) Len() int {
-// 	return len(s.files)
-// }
-
-// // Swap is part of sort.Interface
-// func (s *fileSorter) Swap(i, j int) {
-// 	s.files[i], s.files[j] = s.files[j], s.files[i]
-// }
-
-// // Less is part of sort.Interface. It is implemented by calling th "by" closure in the sorter
-// func (s *fileSorter) Less(i, j int) bool {
-// 	return s.by(&s.files[i], &s.files[j])
-// }
-//
-// A function using the above
-// func sort_Files(files []File) {
-//
-// 	size := func(f1, f2 *File) bool {
-// 		return f1.Size > f2.Size
-// 	}
-// 	By(size).Sort(files)
-//
-// 	name := func(f1, f2 *File) bool {
-// 	return f1.name < f2.name
-// }
-// }
 
 func Readable_Size(bytes int) string {
 	var size float64
