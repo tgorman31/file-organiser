@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"cmp"
+	"strings"
+
 	// tbl "file-organiser/style"
 	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 )
 
 type Dir struct {
@@ -18,16 +19,16 @@ type Dir struct {
 }
 
 type File struct {
-	Name string
-	Size int
+	Name  string
+	Size  int
+	isDir bool
 }
 
-// var d []Dir
-// var f []File
-
 // Function to gather directories
-func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) []Dir {
+func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) ([]Dir, []File, int) {
 	var dr []Dir
+	total_size := 0
+	files := []File{}
 
 	c, err := os.ReadDir(fullPath)
 	check(err)
@@ -37,19 +38,27 @@ func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) []Dir {
 
 		if entry.IsDir() {
 
-			subDirs := Gather_Directories(dir, entryPath, dirLevel, currLevel+1)
+			sub_dir, dir_files, dir_size := Gather_Directories(dir, entryPath, dirLevel, currLevel+1)
 
-			dr = append(dr, subDirs...)
+			total_size += dir_size
+
+			dr = append(dr, sub_dir...)
 
 			fld := strings.Replace(entryPath, dir+"\\", "", -1)
-			dirEntry := Dir{fld, 0, currLevel + 1, nil}
+			dirEntry := Dir{fld, dir_size, currLevel, dir_files}
+
+			files = append(files, File{entry.Name(), dir_size, true})
 
 			if !dirExists(dr, fld) {
 				dr = append(dr, dirEntry)
 			}
+		} else {
+			file_size := getFileSize(entryPath)
+			total_size += file_size
+			files = append(files, File{entry.Name(), file_size, false})
 		}
 	}
-	return dr
+	return dr, files, total_size
 }
 
 // Helper function to check if a directory already exists in the list
@@ -62,63 +71,30 @@ func dirExists(dirs []Dir, dirName string) bool {
 	return false
 }
 
-// Function to find a directory by name and apply a given function to update it
-func Update_Dir(dirs []Dir, dirName string, updateFn func(*Dir)) []Dir {
-	for i, dir := range dirs {
-		if dir.Name == dirName {
-			updateFn(&dirs[i]) // Apply the update function to the directory
-			break
-		}
-	}
-	return dirs
-}
+// // Function to find a directory by name and apply a given function to update it
+// func Update_Dir(dirs []Dir, dirName string, updateFn func(*Dir)) []Dir {
+// 	for i, dir := range dirs {
+// 		if dir.Name == dirName {
+// 			updateFn(&dirs[i]) // Apply the update function to the directory
+// 			break
+// 		}
+// 	}
+// 	return dirs
+// }
 
-// Function to add a specified size to a directory
-func addSize(size int) func(*Dir) {
-	return func(dir *Dir) {
-		dir.Size += size
-	}
-}
+// // Function to add a specified size to a directory
+// func addSize(size int) func(*Dir) {
+// 	return func(dir *Dir) {
+// 		dir.Size += size
+// 	}
+// }
 
-// Function to add new files to a directory
-func addFiles(files []File) func(*Dir) {
-	return func(dir *Dir) {
-		dir.File = append(dir.File, files...)
-	}
-}
-
-// Function to gather files for Dir
-func Gather_Files(path string, prefix_path string) []File {
-	var fl []File
-
-	fullPath := filepath.Join(prefix_path, path)
-
-	c, err := os.ReadDir(fullPath)
-	check(err)
-
-	for _, entry := range c {
-		if !entry.IsDir() {
-			fullPath = filepath.Join(prefix_path+"\\"+path, entry.Name())
-			size := getFileSize(fullPath)
-			fl = append(fl, File{entry.Name(), size})
-		}
-	}
-	return fl
-}
-
-// Update Dir based on gathered files
-func Update_Dirs(dirs []Dir, prefixPath string) []Dir {
-	var size int
-	for _, dir := range dirs {
-		size = 0
-		files := Gather_Files(dir.Name, prefixPath) // Gather files from the directory
-
-		Update_Dir(dirs, dir.Name, addFiles(files)) //
-		size = get_Dir_Size(dirs, dir.Name)
-		Update_Dir(dirs, dir.Name, addSize(size))
-	}
-	return dirs
-}
+// // Function to add new files to a directory
+// func addFiles(files []File) func(*Dir) {
+// 	return func(dir *Dir) {
+// 		dir.File = append(dir.File, files...)
+// 	}
+// }
 
 func Write_to_file(dir []Dir, fileName string) {
 	fl, err := os.Create(fileName)
@@ -150,17 +126,6 @@ func getFileSize(file string) int {
 	return size
 }
 
-func get_Dir_Size(dirs []Dir, dirName string) int {
-	var size int
-	for _, dir := range dirs {
-		if dir.Name == dirName {
-			for i, _ := range dir.File {
-				size += dir.File[i].Size
-			}
-		}
-	}
-	return size
-}
 func check(e error) {
 	if e != nil {
 		panic(e)

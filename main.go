@@ -30,18 +30,19 @@ func main() {
 		dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
 
 	} else {
+		dir = "C:/Users/thoma/Downloads"
 		dir = "subdir"
 		dir = "C:/Users/thoma/Code"
-		dir = "C:/Users/thoma/Downloads"
 		dir = "C:/Users/thoma/D&D"
+		dir = "C:/Users/thoma/D&D/.obsidian"
 	}
 
 	dir = strings.Replace(dir, "/", "\\", -1)
 
 	// size, sortedDirs := cmd.Get_Dir_Items(dir, dir, 2, 1)
-	dirt := cmd.Gather_Directories(dir, dir, 2, 1)
+	dirt, _, _ := cmd.Gather_Directories(dir, dir, 2, 1)
 
-	cmd.Update_Dirs(dirt, dir)
+	// cmd.Update_Dirs(dirt, dir)
 	cmd.Write_to_file(dirt, "final.txt")
 
 	// fmt.Println(size)
