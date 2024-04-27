@@ -1,14 +1,13 @@
 package cmd
 
 import (
-	"cmp"
+	"sort"
 	"strings"
 
 	// tbl "file-organiser/style"
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 )
 
 type Dir struct {
@@ -25,7 +24,7 @@ type File struct {
 }
 
 // Function to gather directories
-func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) ([]Dir, []File, int) {
+func Gather_Directories(dir, fullPath string, currLevel int) ([]Dir, []File, int) {
 	var dr []Dir
 	total_size := 0
 	files := []File{}
@@ -38,19 +37,23 @@ func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) ([]Dir, [
 
 		if entry.IsDir() {
 
-			sub_dir, dir_files, dir_size := Gather_Directories(dir, entryPath, dirLevel, currLevel+1)
+			sub_dir, dir_files, dir_size := Gather_Directories(dir, entryPath, currLevel+1)
 
 			total_size += dir_size
 
 			dr = append(dr, sub_dir...)
 
 			fld := strings.Replace(entryPath, dir+"\\", "", -1)
+
+			sort_Files(dir_files)
+
 			dirEntry := Dir{fld, dir_size, currLevel, dir_files}
 
 			files = append(files, File{entry.Name(), dir_size, true})
 
 			if !dirExists(dr, fld) {
 				dr = append(dr, dirEntry)
+				sort_Directories(dr)
 			}
 		} else {
 			file_size := getFileSize(entryPath)
@@ -71,30 +74,31 @@ func dirExists(dirs []Dir, dirName string) bool {
 	return false
 }
 
-// // Function to find a directory by name and apply a given function to update it
-// func Update_Dir(dirs []Dir, dirName string, updateFn func(*Dir)) []Dir {
-// 	for i, dir := range dirs {
-// 		if dir.Name == dirName {
-// 			updateFn(&dirs[i]) // Apply the update function to the directory
-// 			break
-// 		}
-// 	}
-// 	return dirs
-// }
+func Filter_Dir(dirs []Dir, depth int) []Dir {
+	var d []Dir
+	for _, dir := range dirs {
+		if dir.Depth == depth {
+			d = append(d, dir)
+		}
+	}
+	return d
+}
 
-// // Function to add a specified size to a directory
-// func addSize(size int) func(*Dir) {
-// 	return func(dir *Dir) {
-// 		dir.Size += size
-// 	}
-// }
-
-// // Function to add new files to a directory
-// func addFiles(files []File) func(*Dir) {
-// 	return func(dir *Dir) {
-// 		dir.File = append(dir.File, files...)
-// 	}
-// }
+func Top_N_Files(dirs []Dir, n int) []Dir {
+	var d []Dir
+	var f []File
+	for _, dir := range dirs {
+		for i, file := range dir.File {
+			if i == n {
+				break
+			}
+			f = append(f, File{file.Name, file.Size, file.isDir})
+		}
+		d = append(d, Dir{dir.Name, dir.Size, dir.Depth, f})
+		f = nil
+	}
+	return d
+}
 
 func Write_to_file(dir []Dir, fileName string) {
 	fl, err := os.Create(fileName)
@@ -105,19 +109,16 @@ func Write_to_file(dir []Dir, fileName string) {
 }
 
 func sort_Directories(dirs []Dir) {
-	slices.SortFunc(dirs,
-		func(a, b Dir) int {
-			return cmp.Compare(a.Size, b.Size)
-		})
+	sort.Slice(dirs, func(i, j int) bool {
+		return dirs[i].Size > dirs[j].Size
+	})
 }
 
 func sort_Files(files []File) {
-	slices.SortFunc(files,
-		func(a, b File) int {
-			return cmp.Compare(a.Size, b.Size)
-		})
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Size > files[j].Size
+	})
 }
-
 func getFileSize(file string) int {
 	// Takes a file name and calculates its size
 	fileInfo, err := os.Stat(file)
