@@ -44,7 +44,7 @@ After calculating sizes, sort the directories by size to easily idetify the larg
 Find and list the largest items within each directory. Includes both files and subdirectories
 
 **Goals**
-- [ ] Create a function to find the top N largest files in a directory
+- [x] Create a function to find the top N largest files in a directory
 
 ### 6. User Interface and Interactivity
 Improve usability for the CLI tool by adding help commands, interactive prompts, flag controls etc.

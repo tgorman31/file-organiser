@@ -24,7 +24,7 @@ type File struct {
 }
 
 // Function to gather directories
-func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) ([]Dir, []File, int) {
+func Gather_Directories(dir, fullPath string, currLevel int) ([]Dir, []File, int) {
 	var dr []Dir
 	total_size := 0
 	files := []File{}
@@ -37,7 +37,7 @@ func Gather_Directories(dir, fullPath string, dirLevel, currLevel int) ([]Dir, [
 
 		if entry.IsDir() {
 
-			sub_dir, dir_files, dir_size := Gather_Directories(dir, entryPath, dirLevel, currLevel+1)
+			sub_dir, dir_files, dir_size := Gather_Directories(dir, entryPath, currLevel+1)
 
 			total_size += dir_size
 
@@ -74,6 +74,32 @@ func dirExists(dirs []Dir, dirName string) bool {
 	return false
 }
 
+func Filter_Dir(dirs []Dir, depth int) []Dir {
+	var d []Dir
+	for _, dir := range dirs {
+		if dir.Depth == depth {
+			d = append(d, dir)
+		}
+	}
+	return d
+}
+
+func Top_N_Files(dirs []Dir, n int) []Dir {
+	var d []Dir
+	var f []File
+	for _, dir := range dirs {
+		for i, file := range dir.File {
+			if i == n {
+				break
+			}
+			f = append(f, File{file.Name, file.Size, file.isDir})
+		}
+		d = append(d, Dir{dir.Name, dir.Size, dir.Depth, f})
+		f = nil
+	}
+	return d
+}
+
 func Write_to_file(dir []Dir, fileName string) {
 	fl, err := os.Create(fileName)
 	check(err)
@@ -89,7 +115,6 @@ func sort_Directories(dirs []Dir) {
 }
 
 func sort_Files(files []File) {
-
 	sort.Slice(files, func(i, j int) bool {
 		return files[i].Size > files[j].Size
 	})
