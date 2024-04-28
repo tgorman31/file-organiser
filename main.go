@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	cmd "file-organiser/cmd"
-	stl "file-organiser/style"
+	tbl "file-organiser/table"
 	"fmt"
 	"os"
 	"strings"
@@ -52,7 +52,11 @@ func main() {
 	// cmd.Update_Dirs(dirt, dir)
 	cmd.Write_to_file(dirt, "final.txt")
 
-	p := tea.NewProgram(stl.InitialModel())
+	// table_data := stl.Dir_Tbl_Rows(dirt)
+	p := tea.NewProgram(tbl.NewModel(dirt))
+
+	// stl.CreateTable(table_data)
+
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, ther' be an error: %v", err)
 		os.Exit(1)

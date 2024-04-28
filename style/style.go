@@ -2,21 +2,28 @@ package style
 
 import (
 	"fmt"
+	"os"
 
+	cmds "file-organiser/cmd"
+
+	"github.com/charmbracelet/bubbles/table"
+	tbl "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
-type model struct {
-	choices  []string
-	cursor   int
-	selected map[int]struct{}
+var baseStyle = lg.NewStyle().
+	BorderStyle(lg.NormalBorder()).
+	BorderBackground(lg.Color("240"))
+
+type Table struct {
+	Name string
+	Size int
+	Dir  []cmds.Dir
 }
 
-func InitialModel() model {
-	return model{
-		choices:  []string{"Buy carrots", "Buy celery", "Buy kohlrabi"},
-		selected: make(map[int]struct{}),
-	}
+type model struct {
+	table table.Model
 }
 
 func (m model) Init() tea.Cmd {
@@ -24,122 +31,94 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
+	var cmd tea.Cmd
+	// var d []cmds.Dir
+	// var r tbl.Row
 
+	switch msg := msg.(type) {
 	// Is it a key press?
 	case tea.KeyMsg:
 		// Cool, what was the actual key pressed?
 		switch msg.String() {
-
+		case "esc":
+			if m.table.Focused() {
+				m.table.Blur()
+			} else {
+				m.table.Focus()
+			}
 		// These keys should quit the program.
 		case "ctrl+c", "q":
 			return m, tea.Quit
 
-		// The "up" and "k" keys move the cursor up.
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-
-		// The "down" and "j" keys move the cursor down.
-		case "down", "j":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
-
 		// The "enter" key and the spacebar toggle
 		// the selected state for the item that the cursor is pointing at.
-		case "enter", " ":
-			_, ok := m.selected[m.cursor]
-			if ok {
-				delete(m.selected, m.cursor)
-			} else {
-				m.selected[m.cursor] = struct{}{}
-			}
+		case "enter":
+			// r := File_Tbl_Rows(m.table.SelectedRow()[2])
+			// d := m.table.SelectedRow()[2]
+			// r := File_Tbl_Rows(m.table.SelectedRow())
+
+			return m, tea.Batch(
+				tea.Printf("Let's go to %s!", m.table.SelectedRow()[0]),
+			)
 
 		}
-
 	}
-	// Return the updated model to the Bubble Tea runtime for processing.
-	// Not that we're not returning a command
-	return m, nil
+
+	m.table, cmd = m.table.Update(msg)
+	return m, cmd
 }
 
 func (m model) View() string {
-	// The header
-	s := "What should we buy at the market?\n\n"
-
-	// Iterate over our choices
-	for i, choice := range m.choices {
-
-		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
-		if m.cursor == i {
-			cursor = ">" // cursor!
-		}
-
-		// Is this choice selected?
-		checked := " " // not selected
-		if _, ok := m.selected[i]; ok {
-			checked = "x" // selected!
-		}
-
-		// Render the row
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
-	}
-
-	// The fotter
-	s += "\nPress q to quit.\n"
-
-	// Send the UI for rendering
-	return s
+	return baseStyle.Render(m.table.View()) + "\n"
 
 }
 
-// var HeaderStyle = lg.NewStyle().
-// 	Bold(true).
-// 	Align(lg.Center).
-// 	Foreground(lg.Color("#7D56F4")).
-// 	Width(22)
+func Dir_Tbl_Rows(dirs []cmds.Dir) []table.Row {
+	var t []tbl.Row
+	for _, dir := range dirs {
+		t = append(t, table.Row{dir.Name, fmt.Sprint(dir.Size)})
+	}
+	return t
+}
 
-// var EvenRowStyle = lg.NewStyle().
-// 	Foreground(lg.Color("#FAFAFA")).
-// 	Bold(false).
-// 	Inherit(HeaderStyle)
+func File_Tbl_Rows(files []cmds.File) []table.Row {
+	var t []tbl.Row
+	for _, file := range files {
+		t = append(t, table.Row{file.Name, fmt.Sprint(file.Size)})
+	}
+	return t
+}
 
-// var EvenRowStyleNum = lg.NewStyle().
-// 	Align(lg.Right).
-// 	Inherit(EvenRowStyle)
+func CreateTable(r []table.Row) {
+	columns := []table.Column{
+		{Title: "FOLDER", Width: 22},
+		{Title: "SIZE", Width: 15},
+	}
+	t := tbl.New(
+		tbl.WithColumns(columns),
+		tbl.WithRows(r),
+		tbl.WithFocused(true),
+		tbl.WithHeight(7),
+	)
 
-// var OddRowStyle = lg.NewStyle().
-// 	Background(lg.Color("#2b2a2a")).
-// 	Inherit(EvenRowStyle)
+	s := table.DefaultStyles()
+	s.Header = s.Header.
+		BorderStyle(lg.NormalBorder()).
+		BorderForeground(lg.Color("240")).
+		BorderBottom(true).
+		Bold(true)
+	s.Selected = s.Selected.
+		Foreground(lg.Color("259")).
+		Background(lg.Color("57")).
+		Bold(false)
 
-// var OddRowStyleNum = lg.NewStyle().
-// 	Align(lg.Right).
-// 	Inherit(OddRowStyle)
+	t.SetStyles(s)
 
-// var t = tbl.New().
-// 	Border(lg.NormalBorder()).
-// 	BorderStyle(lg.NewStyle().Foreground(lg.Color("99"))).
-// 	StyleFunc(func(row, col int) lg.Style {
-// 		switch {
-// 		case row == 0:
-// 			return HeaderStyle
-// 		case row%2 == 0:
-// 			if col == 1 {
-// 				return EvenRowStyleNum
-// 			}
-// 			return EvenRowStyle
-// 		default:
-// 			if col == 1 {
-// 				return OddRowStyleNum
-// 			}
-// 			return OddRowStyle
-// 		}
-// 	}).
-// 	Headers("FOLDER", "SIZE")
+	m := model{t}
 
-// func CreateTable() *tbl.Table {
-// 	return t
-// }
+	if _, err := tea.NewProgram(m).Run(); err != nil {
+		fmt.Println("Error running program:", err)
+		os.Exit(1)
+	}
+
+}
