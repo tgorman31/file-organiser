@@ -119,6 +119,7 @@ func sort_Files(files []File) {
 		return files[i].Size > files[j].Size
 	})
 }
+
 func getFileSize(file string) int {
 	// Takes a file name and calculates its size
 	fileInfo, err := os.Stat(file)

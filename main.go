@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 func check(e error) {
@@ -52,11 +50,14 @@ func main() {
 	// cmd.Update_Dirs(dirt, dir)
 	cmd.Write_to_file(dirt, "final.txt")
 
-	p := tea.NewProgram(stl.InitialModel())
-	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, ther' be an error: %v", err)
-		os.Exit(1)
-	}
+	table_data := stl.Dir_Tbl_Rows(dirt)
+
+	stl.CreateTable(table_data)
+
+	// if _, err := p.Run(); err != nil {
+	// 	fmt.Printf("Alas, ther' be an error: %v", err)
+	// 	os.Exit(1)
+	// }
 	// fmt.Println(size)
 	// Output the sorted directories
 	// fmt.Println("Sorted directories:")
