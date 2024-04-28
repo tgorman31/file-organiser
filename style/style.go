@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	cmd "file-organiser/cmd"
+	cmds "file-organiser/cmd"
 
 	"github.com/charmbracelet/bubbles/table"
 	tbl "github.com/charmbracelet/bubbles/table"
@@ -19,6 +19,7 @@ var baseStyle = lg.NewStyle().
 type Table struct {
 	Name string
 	Size int
+	Dir  []cmds.Dir
 }
 
 type model struct {
@@ -31,6 +32,8 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	// var d []cmds.Dir
+	// var r tbl.Row
 
 	switch msg := msg.(type) {
 	// Is it a key press?
@@ -50,6 +53,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// The "enter" key and the spacebar toggle
 		// the selected state for the item that the cursor is pointing at.
 		case "enter":
+			// r := File_Tbl_Rows(m.table.SelectedRow()[2])
+			// d := m.table.SelectedRow()[2]
+			// r := File_Tbl_Rows(m.table.SelectedRow())
+
 			return m, tea.Batch(
 				tea.Printf("Let's go to %s!", m.table.SelectedRow()[0]),
 			)
@@ -66,10 +73,18 @@ func (m model) View() string {
 
 }
 
-func Dir_Tbl_Rows(dirs []cmd.Dir) []table.Row {
+func Dir_Tbl_Rows(dirs []cmds.Dir) []table.Row {
 	var t []tbl.Row
 	for _, dir := range dirs {
 		t = append(t, table.Row{dir.Name, fmt.Sprint(dir.Size)})
+	}
+	return t
+}
+
+func File_Tbl_Rows(files []cmds.File) []table.Row {
+	var t []tbl.Row
+	for _, file := range files {
+		t = append(t, table.Row{file.Name, fmt.Sprint(file.Size)})
 	}
 	return t
 }

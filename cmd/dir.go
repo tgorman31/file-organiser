@@ -100,6 +100,16 @@ func Top_N_Files(dirs []Dir, n int) []Dir {
 	return d
 }
 
+func Get_Files_From_Dir(dirs []Dir, dir_name string) []File {
+	var f []File
+	for _, dir := range dirs {
+		if dir.Name == dir_name {
+			f = append(f, dir.File...)
+		}
+	}
+	return f
+}
+
 func Write_to_file(dir []Dir, fileName string) {
 	fl, err := os.Create(fileName)
 	check(err)
