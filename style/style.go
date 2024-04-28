@@ -53,9 +53,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// The "enter" key and the spacebar toggle
 		// the selected state for the item that the cursor is pointing at.
 		case "enter":
-			// r := File_Tbl_Rows(m.table.SelectedRow()[2])
-			// d := m.table.SelectedRow()[2]
-			// r := File_Tbl_Rows(m.table.SelectedRow())
 
 			return m, tea.Batch(
 				tea.Printf("Let's go to %s!", m.table.SelectedRow()[0]),
