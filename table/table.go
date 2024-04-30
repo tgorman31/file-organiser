@@ -150,7 +150,7 @@ func (m Model) View() string {
 		view := lg.JoinVertical(
 			lg.Left,
 			m.fileTable.View(),
-			styleSubtle.Render("Press q or ctrl+c to quit"),
+			styleSubtle.Render("Press q or ctrl+c to quit. Press esc to return"),
 		) + "\n"
 		return lg.NewStyle().Render(view)
 	}
