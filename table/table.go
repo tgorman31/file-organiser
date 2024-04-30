@@ -67,7 +67,7 @@ type Model struct {
 	dirTable     tbl.Model
 	fileTable    tbl.Model
 	CurrentFiles []ccmd.File
-	IsFileFiew   bool
+	IsFileView   bool
 }
 
 func Table(dir []ccmd.Dir) {
@@ -88,16 +88,27 @@ func NewModel(dir []ccmd.Dir) Model {
 		rows = append(rows, t.ToRow())
 	}
 
+	dirTable := tbl.New([]tbl.Column{
+		tbl.NewColumn(columnKeyName, "Name", 20),
+		tbl.NewColumn(columnKeySize, "Size", 20),
+	}).WithRows(rows).
+		BorderRounded().
+		WithBaseStyle(styleBase).
+		WithPageSize(20).
+		Focused(true)
+
+	fileTable := tbl.New([]tbl.Column{
+		tbl.NewColumn(columnKeyName, "Name", 20),
+		tbl.NewColumn(columnKeySize, "Size", 20),
+	}).WithRows([]tbl.Row{}).
+		BorderRounded().
+		WithBaseStyle(styleBase).
+		WithPageSize(20)
+
 	return Model{
-		dirTable: tbl.New([]tbl.Column{
-			tbl.NewColumn(columnKeyName, "Name", 20),
-			tbl.NewColumn(columnKeySize, "Size", 15),
-		}).WithRows(rows).
-			BorderRounded().
-			WithBaseStyle(styleBase).
-			WithPageSize(20).
-			Focused(true),
-		IsFileFiew: false,
+		dirTable:   dirTable,
+		fileTable:  fileTable,
+		IsFileView: false,
 	}
 }
 
@@ -107,10 +118,10 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	if m.IsFileFiew {
+	if m.IsFileView {
 		m.fileTable, cmd = m.fileTable.Update(msg)
 	} else {
-		m.dirTable, cmd = m.fileTable.Update(msg)
+		m.dirTable, cmd = m.dirTable.Update(msg)
 	}
 
 	switch msg := msg.(type) {
@@ -119,15 +130,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "enter":
-			if !m.IsFileFiew {
+			if !m.IsFileView {
 				selectedFiles := m.dirTable.HighlightedRow().Data[columnkeyFiles].([]ccmd.File)
 				m.CurrentFiles = selectedFiles
 				m.fileTable = CreateFileTable(selectedFiles)
-				m.IsFileFiew = true
+				m.IsFileView = true
 			}
 		case "esc":
-			if m.IsFileFiew {
-				m.IsFileFiew = false
+			if m.IsFileView {
+				m.IsFileView = false
 			}
 		}
 	}
@@ -135,10 +146,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	if !m.IsFileFiew {
-		return m.fileTable.View()
+	if m.IsFileView {
+		view := lg.JoinVertical(
+			lg.Left,
+			m.fileTable.View(),
+			styleSubtle.Render("Press q or ctrl+c to quit"),
+		) + "\n"
+		return lg.NewStyle().Render(view)
 	}
-	return m.dirTable.View()
+	view := lg.JoinVertical(
+		lg.Left,
+		m.dirTable.View(),
+		styleSubtle.Render("Press q or ctrl+c to quit"),
+	) + "\n"
+	return lg.NewStyle().Render(view)
 }
 
 func CreateFileTable(files []ccmd.File) tbl.Model {
@@ -161,93 +182,3 @@ func CreateFileTable(files []ccmd.File) tbl.Model {
 
 	return fileTable
 }
-
-// func updateDir(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
-// 	var (
-// 		cmd  tea.Cmd
-// 		cmds []tea.Cmd
-// 	)
-// 	// fmt.Println("Made it here")
-// 	m.dirTable, cmd = m.dirTable.Update(msg)
-// 	cmds = append(cmds, cmd)
-
-// 	switch msg := msg.(type) {
-// 	case tea.KeyMsg:
-// 		switch msg.String() {
-// 		case "ctrl+c", "q":
-// 			cmds = append(cmds, tea.Quit)
-// 		case "enter":
-// 			m.Files = true
-// 			// return updateFile(msg, m)
-// 			p := tea.NewProgram(New_File_Model(m.dirTable.HighlightedRow().Data[columnkeyFiles].([]ccmd.File)))
-// 			if _, err := p.Run(); err != nil {
-// 				fmt.Printf("Alas, ther' be an error: %v", err)
-// 				os.Exit(1)
-// 			}
-// 		}
-
-// 	}
-
-// 	return m, tea.Batch(cmds...)
-// }
-
-// func updateFile(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
-// 	var (
-// 		cmd  tea.Cmd
-// 		cmds []tea.Cmd
-// 	)
-
-// 	m.dirTable, cmd = m.dirTable.Update(msg)
-// 	cmds = append(cmds, cmd)
-
-// 	switch msg := msg.(type) {
-// 	case tea.KeyMsg:
-// 		switch msg.String() {
-// 		case "ctrl+c", "q":
-// 			cmds = append(cmds, tea.Quit)
-// 		case "b":
-// 			m.Files = false
-// 			// return updateDir(msg, m)
-// 			// return updateDir(msg, m)
-// 			// case "esc":
-// 			fmt.Println("you pressed enter!")
-// 			p := tea.NewProgram(New_File_Model(m.dirTable.HighlightedRow().Data[columnkeyFiles].([]ccmd.File)))
-// 			if _, err := p.Run(); err != nil {
-// 				fmt.Printf("Alas, ther' be an error: %v", err)
-// 				os.Exit(1)
-// 			}
-// 		}
-
-// 	}
-
-// 	return m, tea.Batch(cmds...)
-// }
-
-// func viewDir(m Model) string {
-
-// 	// Get the metadata back out of the row
-// 	selected := m.dirTable.HighlightedRow().Data[columnkeyDir].(TableData)
-
-// 	view := lg.JoinVertical(
-// 		lg.Left,
-// 		styleSubtle.Render("Highlighted: "+fmt.Sprintf("%s", selected.Name)),
-// 		m.dirTable.View(),
-// 		styleSubtle.Render("Press q or ctrl+c to quit"),
-// 	) + "\n"
-
-// 	return lg.NewStyle().MarginLeft(1).Render(view)
-// }
-
-// func viewFile(m Model) string {
-// 	// Get the metadata back out of the row
-// 	selected := m.dirTable.HighlightedRow().Data[columnkeyDir].(TableData)
-
-// 	view := lg.JoinVertical(
-// 		lg.Left,
-// 		styleSubtle.Render("Highlighted: "+fmt.Sprintf("%s", selected.Name)),
-// 		m.dirTable.View(),
-// 		styleSubtle.Render("Press q or ctrl+c to quit"),
-// 	) + "\n"
-
-// 	return lg.NewStyle().MarginLeft(1).Render(view)
-// }
