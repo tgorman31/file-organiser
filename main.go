@@ -4,6 +4,7 @@ import (
 	"bufio"
 	cmd "file-organiser/cmd"
 	tbl "file-organiser/table"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -19,13 +20,21 @@ func main() {
 	var dir string
 	test := false
 
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter a directory path: ")
+	flag.StringVar(&dir, "d", "dir", "a file path")
+	level := flag.Int("l", 1, "The depth level to return")
+	num := flag.Int("n", 5, "The top n files to return")
 
-	dir, err := reader.ReadString('\n')
+	flag.Parse()
+	// fmt.Println()
 
-	check(err)
-	dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
+	if dir == "dir" {
+		fmt.Print("Enter a directory path: ")
+
+		reader := bufio.NewReader(os.Stdin)
+		dir, err := reader.ReadString('\n')
+		check(err)
+		dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
+	}
 
 	if test {
 		dir = "C:/Users/thoma/Downloads"
@@ -39,9 +48,9 @@ func main() {
 
 	dirt, _, _ := cmd.Gather_Directories(dir, dir, 1)
 
-	dirt = cmd.Filter_Dir(dirt, 1)
+	dirt = cmd.Filter_Dir(dirt, *level)
 
-	dirt = cmd.Top_N_Files(dirt, 5)
+	dirt = cmd.Top_N_Files(dirt, *num)
 
 	cmd.Write_to_file(dirt, "final.txt")
 
