@@ -50,7 +50,7 @@ Find and list the largest items within each directory. Includes both files and s
 Improve usability for the CLI tool by adding help commands, interactive prompts, flag controls etc.
 
 **Goals**
-- [ ] Add command-line flags for different functionalities
+- [x] Add command-line flags for different functionalities
 - [ ] Add help documentation
 
 ### 7. Performance Optimisation and Testing

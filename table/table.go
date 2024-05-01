@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 	tbl "github.com/evertras/bubble-table/table"
@@ -44,12 +45,59 @@ type TableData struct {
 	File []ccmd.File
 }
 
+type keyMap struct {
+	Up    key.Binding
+	Down  key.Binding
+	Enter key.Binding
+	Esc   key.Binding
+	Help  key.Binding
+	Quit  key.Binding
+}
+
 func New_Table_Data(name string, size int, file []ccmd.File) TableData {
 	return TableData{
 		Name: name,
 		Size: size,
 		File: file,
 	}
+}
+
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Help, k.Quit, k.Enter}
+}
+
+func (k keyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down, k.Enter},
+		{k.Esc, k.Help, k.Quit},
+	}
+}
+
+var keys = keyMap{
+	Up: key.NewBinding(
+		key.WithKeys("up", "k"),
+		key.WithHelp("↑/k", "move up"),
+	),
+	Down: key.NewBinding(
+		key.WithKeys("down", "j"),
+		key.WithHelp("↓/j", "move down"),
+	),
+	Enter: key.NewBinding(
+		key.WithKeys("enter", "enter"),
+		key.WithHelp("←", "enter directory"),
+	),
+	Esc: key.NewBinding(
+		key.WithKeys("esc", "esc"),
+		key.WithHelp("→", "exit directory"),
+	),
+	Help: key.NewBinding(
+		key.WithKeys("?"),
+		key.WithHelp("?", "toggle help"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("q", "ctrl+c"),
+		key.WithHelp("q", "quit"),
+	),
 }
 
 func (t TableData) ToRow() tbl.Row {
