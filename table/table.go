@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
@@ -84,11 +85,11 @@ var keys = keyMap{
 	),
 	Enter: key.NewBinding(
 		key.WithKeys("enter", "enter"),
-		key.WithHelp("←", "enter directory"),
+		key.WithHelp("↵", "enter directory"),
 	),
 	Esc: key.NewBinding(
 		key.WithKeys("esc", "esc"),
-		key.WithHelp("→", "exit directory"),
+		key.WithHelp("esc", "exit directory"),
 	),
 	Help: key.NewBinding(
 		key.WithKeys("?"),
@@ -116,6 +117,9 @@ type Model struct {
 	fileTable    tbl.Model
 	CurrentFiles []ccmd.File
 	IsFileView   bool
+	keys         keyMap
+	help         help.Model
+	lastKey      string
 }
 
 func Table(dir []ccmd.Dir) {
@@ -157,6 +161,8 @@ func NewModel(dir []ccmd.Dir) Model {
 		dirTable:   dirTable,
 		fileTable:  fileTable,
 		IsFileView: false,
+		help:       help.New(),
+		keys:       keys,
 	}
 }
 
@@ -173,20 +179,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.help.Width = msg.Width
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
+		switch {
+		case key.Matches(msg, m.keys.Up):
+			m.lastKey = "↑"
+		case key.Matches(msg, m.keys.Down):
+			m.lastKey = "↓"
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
+		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
-		case "enter":
+		case key.Matches(msg, m.keys.Esc):
+			if m.IsFileView {
+				m.IsFileView = false
+			}
+		case key.Matches(msg, m.keys.Enter):
 			if !m.IsFileView {
 				selectedFiles := m.dirTable.HighlightedRow().Data[columnkeyFiles].([]ccmd.File)
 				m.CurrentFiles = selectedFiles
 				m.fileTable = CreateFileTable(selectedFiles)
 				m.IsFileView = true
-			}
-		case "esc":
-			if m.IsFileView {
-				m.IsFileView = false
 			}
 		}
 	}
@@ -194,19 +208,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+	helpView := m.help.View(m.keys)
 	if m.IsFileView {
 		view := lg.JoinVertical(
 			lg.Left,
 			m.fileTable.View(),
-			styleSubtle.Render("Press q or ctrl+c to quit. Press esc to return"),
+			helpView,
+			// styleSubtle.Render("Press q or ctrl+c to quit. Press esc to return"),
 		) + "\n"
+		// view = view + helpView
 		return lg.NewStyle().Render(view)
 	}
 	view := lg.JoinVertical(
 		lg.Left,
 		m.dirTable.View(),
-		styleSubtle.Render("Press q or ctrl+c to quit"),
+		helpView,
+		// styleSubtle.Render("Press q or ctrl+c to quit"),
 	) + "\n"
+	// view = view + helpView
 	return lg.NewStyle().Render(view)
 }
 
