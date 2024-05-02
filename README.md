@@ -51,7 +51,7 @@ Improve usability for the CLI tool by adding help commands, interactive prompts,
 
 **Goals**
 - [x] Add command-line flags for different functionalities
-- [ ] Add help documentation
+- [x] Add help menu
 
 ### 7. Performance Optimisation and Testing
 Refine the performance and test reliability

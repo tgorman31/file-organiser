@@ -17,26 +17,29 @@ func check(e error) {
 }
 
 func main() {
+	var path string
 	var dir string
 	test := false
 
-	flag.StringVar(&dir, "d", "dir", "a file path")
+	flag.StringVar(&path, "d", "dir", "a file path")
 	level := flag.Int("l", 1, "The depth level to return")
 	num := flag.Int("n", 5, "The top n files to return")
 
 	flag.Parse()
-	// fmt.Println()
+	if !test {
+		if path == "dir" {
+			fmt.Print("Enter a directory path: ")
 
-	if dir == "dir" {
-		fmt.Print("Enter a directory path: ")
+			reader := bufio.NewReader(os.Stdin)
+			var err error
+			dir, err = reader.ReadString('\n')
+			check(err)
+			dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
 
-		reader := bufio.NewReader(os.Stdin)
-		dir, err := reader.ReadString('\n')
-		check(err)
-		dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
-	}
-
-	if test {
+		} else {
+			dir = path
+		}
+	} else {
 		dir = "C:/Users/thoma/Downloads"
 		dir = "subdir"
 		dir = "C:/Users/thoma/Code"
