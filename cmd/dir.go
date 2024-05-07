@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bufio"
+	"flag"
 	"sort"
 	"strings"
 
@@ -72,6 +74,42 @@ func dirExists(dirs []Dir, dirName string) bool {
 		}
 	}
 	return false
+}
+
+func Is_Dir(fullpath string) bool {
+	_, err := os.ReadDir(fullpath)
+
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func User_Input() (dir string, level *int, num *int) {
+	var path string
+
+	flag.StringVar(&path, "d", "dir", "a file path")
+	level = flag.Int("l", 1, "The depth level to return")
+	num = flag.Int("n", 5, "The top n files to return")
+
+	flag.Parse()
+	if path == "dir" {
+		fmt.Print("Enter a directory path: ")
+
+		reader := bufio.NewReader(os.Stdin)
+		var err error
+		dir, err = reader.ReadString('\n')
+		check(err)
+		dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
+
+	} else {
+		dir = path
+	}
+
+	dir = strings.Replace(dir, "/", "\\", -1)
+
+	return dir, level, num
+
 }
 
 func Filter_Dir(dirs []Dir, depth int) []Dir {
