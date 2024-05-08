@@ -5,18 +5,13 @@ import (
 	tbl "file-organiser/table"
 )
 
-// func check(e error) {
-// 	if e != nil {
-// 		panic(e)
-// 	}
-// }
-
 func main() {
+	var dir string
 
-	dir, level, num := cmd.User_Input()
+	path, level, num := cmd.Path_Suplied()
 
-	if !cmd.Is_Dir(dir) {
-		panic("Supplied String is not a recognised Directory")
+	if path == "dir" {
+		dir = cmd.User_Input()
 	}
 
 	dirt, _, _ := cmd.Gather_Directories(dir, dir, 1)

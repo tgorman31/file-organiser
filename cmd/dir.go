@@ -85,7 +85,7 @@ func Is_Dir(fullpath string) bool {
 	return true
 }
 
-func User_Input() (dir string, level *int, num *int) {
+func Path_Suplied() (dir string, level *int, num *int) {
 	var path string
 
 	flag.StringVar(&path, "d", "dir", "a file path")
@@ -93,22 +93,28 @@ func User_Input() (dir string, level *int, num *int) {
 	num = flag.Int("n", 5, "The top n files to return")
 
 	flag.Parse()
-	if path == "dir" {
-		fmt.Print("Enter a directory path: ")
+	return path, level, num
+}
 
-		reader := bufio.NewReader(os.Stdin)
-		var err error
-		dir, err = reader.ReadString('\n')
-		check(err)
-		dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
+func User_Input() (dir string) {
 
-	} else {
-		dir = path
-	}
+	fmt.Print("Enter a directory path: ")
+
+	reader := bufio.NewReader(os.Stdin)
+	var err error
+	dir, err = reader.ReadString('\n')
+	check(err)
+	dir = strings.TrimSpace(dir) //Handles windows \r\n for newlines
 
 	dir = strings.Replace(dir, "/", "\\", -1)
 
-	return dir, level, num
+	if !Is_Dir(dir) {
+		fmt.Println("Supplied string is not a recognised Directory \n Please enter a valid directory")
+		dir := User_Input()
+		return dir
+	}
+
+	return dir
 
 }
 
