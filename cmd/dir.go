@@ -32,7 +32,10 @@ func Gather_Directories(dir, fullPath string, currLevel int) ([]Dir, []File, int
 	files := []File{}
 
 	c, err := os.ReadDir(fullPath)
-	check(err)
+	if err != nil {
+		return dr, files, total_size
+	}
+	// check(err)
 
 	for _, entry := range c {
 		entryPath := filepath.Join(fullPath, entry.Name())
@@ -93,6 +96,12 @@ func Path_Suplied() (dir string, level *int, num *int) {
 	num = flag.Int("n", 5, "The top n files to return")
 
 	flag.Parse()
+	if path != "dir" && !Is_Dir(path) {
+		fmt.Println("Supplied flag string is not a recognised Directory")
+		path = "dir"
+		return path, level, num
+	}
+
 	return path, level, num
 }
 
@@ -177,7 +186,10 @@ func sort_Files(files []File) {
 func getFileSize(file string) int {
 	// Takes a file name and calculates its size
 	fileInfo, err := os.Stat(file)
-	check(err)
+	if err != nil {
+		return 0
+	}
+
 	var size int = int(fileInfo.Size())
 	return size
 }
