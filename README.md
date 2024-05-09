@@ -11,6 +11,29 @@ Going to work my way up to the final program by implementing basic functionallit
  - The tool lists out each subdirectory and its size
  - The user can select a subdirectory and the tool will display the top 10 dir's or files in it by size
 
+## Result
+ - Helped with identifing over 60gb of items to be cleared off my device
+
+## What I've Learned
+ - How to structure a Go project and how the files interact with each other
+ - Some basic Go functionality incl structs, ranges & slices
+ - Reading Directories and FileInfo in Go with the os stdlib
+ - Recursive Function calling
+ - A file navigation system would have worked better for my desired goals
+ - Reading user input with bufio
+ - Reading command line flags
+ - Slice sorting
+ - A basic understanding of Bubbletea
+
+## Lessons Learned
+ - Go feels quite natural to code in
+ - There are a lot of concepts that I still need to work on
+ - A file organiser should allow for better traversing of directories (v2?)
+ - Definitely need to do more with Bubbletea, love the concept but definitely need to do more in it to understand it better
+ - The Bubbletea component added more complexity where a file output may have sufficed
+ - I have no idea on how to do testing
+ - Not fully grasping some concepts led me down paths which required re-writes
+
 ## Dev Stages
 ### 1. Basic Directory Listing
 Create a Go program that can list all files and subdirectories in a given directory
@@ -57,6 +80,6 @@ Improve usability for the CLI tool by adding help commands, interactive prompts,
 Refine the performance and test reliability
 
 **Goals**
-- [ ] Add error handling to manage permissions issues or unreadable files
+- [x] Add error handling to manage permissions issues or unreadable files
 - [ ] Optimise performancce for large directories
 - [ ] Write unit tests
